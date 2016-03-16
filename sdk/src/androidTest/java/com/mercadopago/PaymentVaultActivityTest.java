@@ -1,9 +1,7 @@
 package com.mercadopago;
 
-import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
-import android.support.test.espresso.Espresso;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.intent.matcher.IntentMatchers;
@@ -12,7 +10,6 @@ import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.test.suitebuilder.annotation.LargeTest;
 
 
-import com.mercadopago.core.MercadoPago;
 import com.mercadopago.model.CardToken;
 import com.mercadopago.model.PaymentMethod;
 import com.mercadopago.model.PaymentMethodSearch;
@@ -72,7 +69,7 @@ public class PaymentVaultActivityTest {
     @Test
     public void initializeGroupsRecyclerViewOnCreate() {
         mTestRule.launchActivity(startIntent);
-        Assert.assertTrue(mTestRule.getActivity().mSearchItemsRecyclerView != null);
+        Assert.assertTrue(mTestRule.getActivity().mGroupsRecyclerView != null);
     }
 
     @Test
@@ -88,7 +85,7 @@ public class PaymentVaultActivityTest {
         String json = StaticMock.getCompletePaymentMethodSearchAsJson();
         mTestRule.addApiResponseToQueue(json, 200, "");
         mTestRule.launchActivity(startIntent);
-        Assert.assertTrue(mTestRule.getActivity().mSearchItemsRecyclerView.getAdapter().getItemCount() != 0);
+        Assert.assertTrue(mTestRule.getActivity().mGroupsRecyclerView.getAdapter().getItemCount() != 0);
     }
 
     @Test
@@ -113,6 +110,7 @@ public class PaymentVaultActivityTest {
         Assert.assertTrue(mTestRule.getActivity().mPaymentMethodSearch == null);
     }
 
+    //TODO: corregir
     @Test
     public void ifSelectedSearchItemReceivedShowItsChildren() {
         String json = StaticMock.getCompletePaymentMethodSearchAsJson();
@@ -121,7 +119,7 @@ public class PaymentVaultActivityTest {
         startIntent.putExtra("selectedSearchItem", item);
         mTestRule.launchActivity(startIntent);
 
-        Assert.assertTrue(mTestRule.getActivity().mSearchItemsRecyclerView.getAdapter().getItemCount() != 0);
+        Assert.assertTrue(mTestRule.getActivity().mGroupsRecyclerView.getAdapter().getItemCount() != 0);
     }
 
     @Test
@@ -214,6 +212,7 @@ public class PaymentVaultActivityTest {
             }
         });
     }
+
     @Test
     public void whenResultFromGuessingNewCardFormReceivedSetItAsResultForCheckoutActivity() {
         String paymentMethodSearchJson = StaticMock.getCompletePaymentMethodSearchAsJson();

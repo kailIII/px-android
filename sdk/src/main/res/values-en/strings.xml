@@ -64,6 +64,8 @@
     <string name="mpsdk_title_activity_checkout">Verify that everything is in order…</string>
 
     <string name="mpsdk_payment_method_groups_label">Others</string>
+    <string name="mpsdk_payment_method_preferred_label">Your preferred</string>
+
     <string name="mpsdk_shopping_cart_text">Shopping cart</string>
     <string name="mpsdk_pay_button_text">Pay</string>
     <string name="mpsdk_text_terms_and_conditions_start">By paying, I claim to be an adult and that I accept the</string>

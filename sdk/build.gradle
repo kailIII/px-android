@@ -7,11 +7,11 @@ group = "com.mercadopago"
 archivesBaseName = "android-sdk"
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 22
     buildToolsVersion "23.0.2"
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 23
+        targetSdkVersion 22
         versionCode 1
         versionName '1.0'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

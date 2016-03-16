@@ -1,0 +1,66 @@
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/list_item_height"
+    android:gravity="center_vertical"
+    android:paddingLeft="10dp"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    android:paddingRight="10dp"
+    android:background="@color/mpsdk_white"
+    android:minHeight="45dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="25dp"
+        android:src="@drawable/visa"
+        android:adjustViewBounds="true"
+        android:id="@+id/paymentMethodImage"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_gravity="center_vertical"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"/>
+
+    <TextView
+        android:id="@+id/paymentMethodDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        tools:text="terminada en X"
+        style="@style/mpsdk_list_label"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/paymentMethodImage"
+        android:layout_toEndOf="@+id/paymentMethodImage"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"/>
+
+    <TextView
+        android:id="@+id/paymentMethodComment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Hola, soy un comentario"
+        style="@style/mpsdk_list_label_comment"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/paymentMethodDescription"
+        android:layout_alignStart="@+id/paymentMethodDescription"
+        android:layout_below="@+id/paymentMethodDescription" />
+
+    <ImageView
+        android:layout_width="15dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/edit"
+        android:adjustViewBounds="true"
+        android:id="@+id/imageEdit"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:tint="@color/mpsdk_colorPrimary"
+        android:layout_marginRight="10dp"
+    android:layout_marginEnd="10dp"/>
+
+</RelativeLayout>

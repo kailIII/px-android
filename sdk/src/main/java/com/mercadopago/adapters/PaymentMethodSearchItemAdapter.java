@@ -45,17 +45,17 @@ public class PaymentMethodSearchItemAdapter extends RecyclerView.Adapter<Payment
         if(itemNeedsDescription(item))
         {
             view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.pm_search_item_row, parent, false);
+                    .inflate(R.layout.row_pm_search_item, parent, false);
         }
         else {
             view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.pm_search_pm_item_row, parent, false);
+                    .inflate(R.layout.row_pm_no_description_select, parent, false);
         }
         return view;
     }
 
     private boolean itemNeedsDescription(PaymentMethodSearchItem item) {
-        return !item.getType().equals("payment_method") || item.getId().equals("bitcoin");
+        return !item.getType().equals("payment_method") || item.getId().equals("bitcoin") || item.getType().equals("preferred_payment_method");
     }
 
     @Override
@@ -151,6 +151,9 @@ public class PaymentMethodSearchItemAdapter extends RecyclerView.Adapter<Payment
                     break;
                 case "payment_method":
                     mCallback.onPaymentMethodItemClicked(mItem);
+                    break;
+                case "preferred_payment_method":
+                    mCallback.onPreferredPaymentMethodItemClicked(mItem);
                     break;
             }
         }

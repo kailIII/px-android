@@ -16,6 +16,10 @@ public class PaymentMethodSearch {
         return groups;
     }
 
+    public List<PaymentMethodSearchItem> getPreferred() {
+        return preferred;
+    }
+
     public boolean hasPreferred() {
         return this.preferred != null;
     }
@@ -24,4 +28,7 @@ public class PaymentMethodSearch {
         return this.groups != null;
     }
 
+    public void setPreferred(List<PaymentMethodSearchItem> preferred) {
+        this.preferred = preferred;
+    }
 }

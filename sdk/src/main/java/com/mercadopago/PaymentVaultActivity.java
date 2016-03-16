@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,7 +18,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mercadopago.adapters.PaymentMethodSearchItemAdapter;
 import com.mercadopago.callbacks.GetPaymentMethodCallback;
 import com.mercadopago.callbacks.PaymentMethodSearchCallback;
-import com.mercadopago.controllers.ShoppingCartController;
+import com.mercadopago.controllers.ShoppingCartViewController;
 import com.mercadopago.core.MercadoPago;
 import com.mercadopago.model.CardToken;
 import com.mercadopago.model.Issuer;
@@ -26,6 +27,7 @@ import com.mercadopago.model.PaymentMethod;
 import com.mercadopago.model.PaymentMethodSearch;
 import com.mercadopago.model.PaymentMethodSearchItem;
 import com.mercadopago.model.PaymentType;
+import com.mercadopago.model.SavedCardToken;
 import com.mercadopago.model.Token;
 import com.mercadopago.util.ApiUtil;
 import com.mercadopago.util.CurrenciesUtil;
@@ -41,7 +43,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class PaymentVaultActivity extends AppCompatActivity {
-
+    //TODO validaciones de currency no finaliza activity
     private static final int PURCHASE_TITLE_MAX_LENGTH = 50;
     // Local vars
     protected Activity mActivity;
@@ -51,10 +53,14 @@ public class PaymentVaultActivity extends AppCompatActivity {
     protected CardToken mCardToken;
     protected Issuer mSelectedIssuer;
     protected PayerCost mSelectedPayerCost;
-    protected ShoppingCartController mShoppingCartController;
+    protected ShoppingCartViewController mShoppingCartViewController;
 
     // Controls
-    protected RecyclerView mSearchItemsRecyclerView;
+    protected RecyclerView mGroupsRecyclerView;
+    protected RecyclerView mPreferredRecyclerView;
+    protected TextView mPreferredTitleTextView;
+    protected TextView mGroupsTitleTextView;
+    protected TextView mActivityTitle;
 
     // Current values
     protected PaymentMethodSearch mPaymentMethodSearch;
@@ -77,7 +83,7 @@ public class PaymentVaultActivity extends AppCompatActivity {
     protected String mPurchaseTitle;
     protected String mItemImageUri;
     protected String mCurrencyId;
-    private TextView mActivityTitle;
+    protected String mPayerEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,13 +92,12 @@ public class PaymentVaultActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setElevation(0);
-
         getActivityParameters();
 
         try {
             validateActivityParameters();
         } catch (IllegalStateException e) {
+            //TODO: ver como reaccionar ante errores
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
@@ -199,7 +204,7 @@ public class PaymentVaultActivity extends AppCompatActivity {
         }
         mCurrencyId = this.getIntent().getStringExtra("currencyId");
         mItemImageUri = this.getIntent().getStringExtra("itemImageUri");
-        mPurchaseTitle = getFormatedPurchaseTitle();
+        mPurchaseTitle = getFormattedPurchaseTitle();
 
         mSupportMPApp = this.getIntent().getBooleanExtra("supportMPApp", false);
 
@@ -210,6 +215,7 @@ public class PaymentVaultActivity extends AppCompatActivity {
         mMerchantAccessToken = this.getIntent().getStringExtra("merchantAccessToken");
         mCardGuessingEnabled = this.getIntent().getBooleanExtra("cardGuessingEnabled", false);
         mShowBankDeals = this.getIntent().getBooleanExtra("showBankDeals", true);
+        mPayerEmail = this.getIntent().getStringExtra("payerEmail");
 
         if (this.getIntent().getStringExtra("excludedPaymentMethodIds") != null) {
             Gson gson = new Gson();
@@ -231,7 +237,7 @@ public class PaymentVaultActivity extends AppCompatActivity {
         }
     }
 
-    protected String getFormatedPurchaseTitle() {
+    protected String getFormattedPurchaseTitle() {
         if(this.getIntent().getStringExtra("purchaseTitle") != null) {
             String purchaseTitle = this.getIntent().getStringExtra("purchaseTitle");
             if (purchaseTitle.length() > PURCHASE_TITLE_MAX_LENGTH) {
@@ -245,13 +251,27 @@ public class PaymentVaultActivity extends AppCompatActivity {
 
     protected void initializeControls() {
         initializeGroupRecyclerView();
+        initializePreferredRecyclerView();
         mActivityTitle = (TextView) findViewById(R.id.title);
+        mPreferredTitleTextView = (TextView) findViewById(R.id.preferredLabel);
+        mGroupsTitleTextView = (TextView) findViewById(R.id.groupsLabel);
+    }
+
+    protected void initializeGroupRecyclerView() {
+        mGroupsRecyclerView = (RecyclerView) findViewById(R.id.groupsList);
+        mGroupsRecyclerView.setHasFixedSize(true);
+        mGroupsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+    protected void initializePreferredRecyclerView() {
+        mPreferredRecyclerView = (RecyclerView) findViewById(R.id.preferredList);
+        mPreferredRecyclerView.setHasFixedSize(true);
+        mPreferredRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.shopping_cart_menu, menu);
-        mShoppingCartController = new ShoppingCartController(this, menu.findItem(R.id.shopping_cart), mItemImageUri, mPurchaseTitle,
+        mShoppingCartViewController = new ShoppingCartViewController(this, menu.findItem(R.id.shopping_cart), mItemImageUri, mPurchaseTitle,
                 mAmount, mCurrencyId, false, findViewById(R.id.content_layout));
         return true;
     }
@@ -260,15 +280,9 @@ public class PaymentVaultActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.shopping_cart) {
-            mShoppingCartController.toggle(true);
+            mShoppingCartViewController.toggle(true);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    protected void initializeGroupRecyclerView() {
-        mSearchItemsRecyclerView = (RecyclerView) findViewById(R.id.groupsList);
-        mSearchItemsRecyclerView.setHasFixedSize(true);
-        mSearchItemsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     protected void setActivity() {
@@ -280,16 +294,16 @@ public class PaymentVaultActivity extends AppCompatActivity {
     }
 
     protected void getPaymentMethodSearch() {
+        //TODO: Si no viene nada en ninguna llamada, finalizo
         mMercadoPago.getPaymentMethodSearch(mAmount, mExcludedPaymentTypes, mExcludedPaymentMethodIds, new Callback<PaymentMethodSearch>() {
             @Override
             public void success(PaymentMethodSearch paymentMethodSearch, Response response) {
-                LayoutUtil.showRegularLayout(mActivity);
-                if(!paymentMethodSearch.hasSearchItems()) {
-                    finishWithEmptyPaymentMethodSearch();
-                }
-                else {
-                    mPaymentMethodSearch = paymentMethodSearch;
+                mPaymentMethodSearch = paymentMethodSearch;
+                if (preferredPaymentMethodsPossible()) {
+                    getPreferredPaymentMethods();
+                } else {
                     setSearchLayout();
+                    LayoutUtil.showRegularLayout(mActivity);
                 }
             }
 
@@ -300,6 +314,27 @@ public class PaymentVaultActivity extends AppCompatActivity {
         });
     }
 
+    private void getPreferredPaymentMethods() {
+        mMercadoPago.getPreferredPaymentMethods(mPayerEmail, new Callback<List<PaymentMethodSearchItem>>() {
+            @Override
+            public void success(List<PaymentMethodSearchItem> paymentMethodSearchItems, Response response) {
+                mPaymentMethodSearch.setPreferred(paymentMethodSearchItems);
+                setSearchLayout();
+                LayoutUtil.showRegularLayout(mActivity);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                setSearchLayout();
+                LayoutUtil.showRegularLayout(mActivity);
+            }
+        });
+    }
+
+    private boolean preferredPaymentMethodsPossible() {
+        return this.mPayerEmail != null && !this.mPayerEmail.isEmpty();
+    }
+
     private void finishWithEmptyPaymentMethodSearch() {
         //TODO modificar
         Toast.makeText(mActivity, "No hay medios de pago disponibles", Toast.LENGTH_SHORT).show();
@@ -308,34 +343,45 @@ public class PaymentVaultActivity extends AppCompatActivity {
 
     protected void setSearchLayout() {
         if(mPaymentMethodSearch.hasPreferred() && mPaymentMethodSearch.hasSearchItems()) {
-            //showTitles
+            showListTitles();
             populateSearchList(mPaymentMethodSearch.getGroups());
-            //populatePreferredList(paymentMethodSearch.getPreferred());
+            populatePreferredList(mPaymentMethodSearch.getPreferred());
         }
         else if(mPaymentMethodSearch.hasSearchItems()) {
             populateSearchList(mPaymentMethodSearch.getGroups());
         }
         else if(mPaymentMethodSearch.hasPreferred()) {
-            //populatePreferredList(paymentMethodSearch.getPreferred());
+            populatePreferredList(mPaymentMethodSearch.getPreferred());
         }
+    }
+
+    private void showListTitles() {
+        this.mPreferredTitleTextView.setVisibility(View.VISIBLE);
+        this.mGroupsTitleTextView.setVisibility(View.VISIBLE);
     }
 
     protected void populateSearchList(List<PaymentMethodSearchItem> items) {
         PaymentMethodSearchItemAdapter groupsAdapter = new PaymentMethodSearchItemAdapter(this, items, getPaymentMethodSearchCallback());
-        mSearchItemsRecyclerView.setAdapter(groupsAdapter);
+        mGroupsRecyclerView.setAdapter(groupsAdapter);
+    }
+
+    private void populatePreferredList(List<PaymentMethodSearchItem> preferred) {
+        mPreferredRecyclerView.setVisibility(View.VISIBLE);
+        PaymentMethodSearchItemAdapter preferredAdapter = new PaymentMethodSearchItemAdapter(this, preferred, getPaymentMethodSearchCallback());
+        mPreferredRecyclerView.setAdapter(preferredAdapter);
     }
 
     protected PaymentMethodSearchCallback getPaymentMethodSearchCallback() {
         return new PaymentMethodSearchCallback() {
             @Override
             public void onGroupItemClicked(PaymentMethodSearchItem groupIem) {
-                startActivityForItem(groupIem);
+                restartActivityWithSelectedItem(groupIem);
             }
 
             @Override
             public void onPaymentTypeItemClicked(PaymentMethodSearchItem paymentTypeItem) {
-                if(paymentTypeItem.hasChildren()){
-                    startActivityForItem(paymentTypeItem);
+                if(paymentTypeItem.hasChildren()) {
+                    restartActivityWithSelectedItem(paymentTypeItem);
                 }
                 else {
                     startNextStepForPaymentType(paymentTypeItem.getId());
@@ -344,28 +390,58 @@ public class PaymentVaultActivity extends AppCompatActivity {
 
             @Override
             public void onPaymentMethodItemClicked(final PaymentMethodSearchItem paymentMethodItem) {
-                if(paymentMethodItem.getId().equals(getResources().getString(R.string.mpsdk_mp_app_id))) {
-                    //TODO account money
+                mMercadoPago.getPaymentMethodById(paymentMethodItem.getId(), new GetPaymentMethodCallback() {
+                    @Override
+                    public void onSuccess(PaymentMethod paymentMethod) {
+                        finishWithPaymentMethodResult(paymentMethod, paymentMethodItem.getComment());
+                    }
+                    @Override
+                    public void onFailure() {
+                        PaymentMethod paymentMethod = new PaymentMethod();
+                        paymentMethod.setId(paymentMethodItem.getId());
+                        finishWithPaymentMethodResult(paymentMethod, paymentMethodItem.getComment());
+                    }
+                });
+            }
+
+            @Override
+            public void onPreferredPaymentMethodItemClicked(PaymentMethodSearchItem preferredPaymentMethodItem) {
+                if(preferredPaymentMethodItem.getId().equals("account_money")){
+                    resolveAccountMoneySelected(preferredPaymentMethodItem);
                 }
-                else {
-                    mMercadoPago.getPaymentMethodById(paymentMethodItem.getId(), new GetPaymentMethodCallback() {
-                        @Override
-                        public void onSuccess(PaymentMethod paymentMethod) {
-                            finishWithPaymentMethodResult(paymentMethod, paymentMethodItem.getComment());
-                        }
-                        @Override
-                        public void onFailure() {
-                            PaymentMethod paymentMethod = new PaymentMethod();
-                            paymentMethod.setId(paymentMethodItem.getId());
-                            finishWithPaymentMethodResult(paymentMethod, paymentMethodItem.getComment());
-                        }
-                    });
+                else if (preferredPaymentMethodItem.isSavedCard()) {
+                    resolveSavedCardSelected(preferredPaymentMethodItem);
                 }
             }
         };
     }
 
-    private void startActivityForItem(PaymentMethodSearchItem groupIem) {
+    private void resolveAccountMoneySelected(PaymentMethodSearchItem preferredPaymentMethodItem) {
+        PaymentMethod paymentMethod = new PaymentMethod();
+        paymentMethod.setId(preferredPaymentMethodItem.getId());
+        paymentMethod.setName(preferredPaymentMethodItem.getDescription());
+        finishWithPaymentMethodResult(paymentMethod, "");
+    }
+
+    private void resolveSavedCardSelected(final PaymentMethodSearchItem savedCardItem) {
+        LayoutUtil.showProgressLayout(this);
+        final SavedCardToken savedCardToken = new SavedCardToken(savedCardItem.getCardId(), "");
+        mMercadoPago.getPaymentMethodById(savedCardItem.getId(), new GetPaymentMethodCallback() {
+            @Override
+            public void onSuccess(PaymentMethod paymentMethod) {
+                finishWithSavedCardResult(paymentMethod, savedCardToken, savedCardItem.getDescription());
+            }
+
+            @Override
+            public void onFailure() {
+                PaymentMethod paymentMethod = new PaymentMethod();
+                paymentMethod.setId(savedCardItem.getId());
+                finishWithSavedCardResult(paymentMethod, savedCardToken, savedCardItem.getDescription());
+            }
+        });
+    }
+
+    private void restartActivityWithSelectedItem(PaymentMethodSearchItem groupIem) {
         Intent intent = new Intent(this, PaymentVaultActivity.class);
         intent.putExtra("selectedSearchItem", groupIem);
         intent.putExtra("merchantPublicKey", mMerchantPublicKey);
@@ -427,8 +503,18 @@ public class PaymentVaultActivity extends AppCompatActivity {
             mSelectedPayerCost = (PayerCost) data.getSerializableExtra("payerCost");
 
             LayoutUtil.showProgressLayout(mActivity);
-            mMercadoPago.createToken(mCardToken, getCreateTokenCallback());
+            mMercadoPago.createToken(mCardToken, new Callback<Token>() {
+                @Override
+                public void success(Token token, Response response) {
+                    finishWithTokenResult(token);
+                }
 
+                @Override
+                public void failure(RetrofitError error) {
+                    mExceptionOnMethod = "getCreateTokenCallback";
+                    ApiUtil.finishWithApiException(mActivity, error);
+                }
+            });
 
         } else if ((data != null) && (data.getSerializableExtra("apiException") != null)) {
             finishWithApiException(data);
@@ -447,25 +533,20 @@ public class PaymentVaultActivity extends AppCompatActivity {
         }
     }
 
-    protected Callback<Token> getCreateTokenCallback() {
+    private void finishWithSavedCardResult(PaymentMethod paymentMethod, SavedCardToken savedCardToken, String description) {
+        LayoutUtil.showRegularLayout(mActivity);
 
-        return new Callback<Token>() {
-            @Override
-            public void success(Token token, Response response) {
-
-                finishWithTokenResult(token);
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-
-                mExceptionOnMethod = "getCreateTokenCallback";
-                ApiUtil.finishWithApiException(mActivity, error);
-            }
-        };
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("paymentMethod", paymentMethod);
+        returnIntent.putExtra("paymentMethodInfo", description);
+        returnIntent.putExtra("savedCardToken", savedCardToken);
+        this.setResult(Activity.RESULT_OK, returnIntent);
+        this.finish();
     }
 
     protected void finishWithPaymentMethodResult(PaymentMethod paymentMethod, String paymentMethodInfo) {
+        LayoutUtil.showRegularLayout(mActivity);
+
         Intent returnIntent = new Intent();
         returnIntent.putExtra("paymentMethod", paymentMethod);
         returnIntent.putExtra("paymentMethodInfo", paymentMethodInfo);
@@ -474,6 +555,7 @@ public class PaymentVaultActivity extends AppCompatActivity {
     }
 
     protected void finishWithTokenResult(Token token) {
+        LayoutUtil.showRegularLayout(this);
         Intent returnIntent = new Intent();
         returnIntent.putExtra("token", token);
         if (mSelectedIssuer != null) {

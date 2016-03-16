@@ -7,6 +7,7 @@ import com.mercadopago.model.Payment;
 import com.mercadopago.model.PaymentIntent;
 import com.mercadopago.model.PaymentMethod;
 import com.mercadopago.model.PaymentMethodSearch;
+import com.mercadopago.model.PaymentMethodSearchItem;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,6 +23,9 @@ public interface PaymentService {
 
     @GET("/v1/payment_methods")
     void getPaymentMethods(@Query("public_key") String publicKey, Callback<List<PaymentMethod>> callback);
+
+    @GET("/preferred")
+    void getPreferredPaymentMethods(@Query("public_key") String publicKey, @Query("payer_email") String payerEmail, Callback<List<PaymentMethodSearchItem>> callback);
 
     @GET("/checkout/beta/v1/payment_methods/search/options")
     void getPaymentMethodSearch(@Query("public_key") String publicKey, @Query("amount") BigDecimal amount, @Query("excluded_payment_types") String excludedPaymentTypes, @Query("excluded_payment_methods") String excludedPaymentMethods, Callback<PaymentMethodSearch> callback);

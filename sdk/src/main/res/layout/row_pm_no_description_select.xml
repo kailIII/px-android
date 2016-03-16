@@ -1,0 +1,63 @@
+<FrameLayout
+    android:layout_width="fill_parent"
+    android:layout_height="@dimen/list_item_height_large"
+    android:orientation="horizontal"
+    android:paddingLeft="10dp"
+    android:paddingStart="10dp"
+    android:background="@color/mpsdk_white"
+    android:minHeight="45dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_marginTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="100dp"
+            android:maxHeight="30dp"
+            android:src="@drawable/serfin_bank_transfer"
+            android:adjustViewBounds="true"
+            android:id="@+id/image"
+            android:layout_gravity="center_vertical"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_above="@+id/comment" />
+
+        <TextView
+            android:id="@+id/comment"
+            android:layout_marginBottom="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Hola, soy un comentario"
+            style="@style/mpsdk_list_label_comment"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/image"
+            android:layout_alignLeft="@+id/image"/>
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="20dp"
+            android:src="@drawable/arrow_right"
+            android:adjustViewBounds="true"
+            android:id="@+id/imageArrow"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:tint="@color/mpsdk_warm_grey"/>
+        <View
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:id="@+id/separator"
+            android:background="@color/mpsdk_separator"
+            android:layout_alignLeft="@+id/comment"
+            android:layout_alignStart="@+id/comment"
+            android:layout_gravity="center_horizontal|bottom" />
+    </RelativeLayout>
+</FrameLayout>

@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 /**
  * Created by mreverter on 10/2/16.
  */
-public class ShoppingCartController {
+public class ShoppingCartViewController {
 
     private Boolean mStartShowingItemInfo;
     private Activity mActivity;
@@ -36,12 +36,12 @@ public class ShoppingCartController {
     private String mPictureUrl;
     private ImageView mItemImageView;
 
-    public ShoppingCartController(Activity activity, MenuItem toggler, String pictureUri, String purchaseTitle, BigDecimal amount, String currencyId, Boolean startShowingItemInfo, View viewBelowShoppingCart) {
+    public ShoppingCartViewController(Activity activity, MenuItem toggler, String pictureUri, String purchaseTitle, BigDecimal amount, String currencyId, Boolean startShowingItemInfo, View viewBelowShoppingCart) {
         mMenuItemTogglerShoppingCart = toggler;
         initialize(activity, pictureUri, purchaseTitle, amount, currencyId, startShowingItemInfo, viewBelowShoppingCart);
         start();
     }
-    public ShoppingCartController(Activity activity, ImageView toggler, String pictureUri, String purchaseTitle, BigDecimal amount, String currencyId, Boolean startShowingItemInfo, View viewBelowShoppingCart) {
+    public ShoppingCartViewController(Activity activity, ImageView toggler, String pictureUri, String purchaseTitle, BigDecimal amount, String currencyId, Boolean startShowingItemInfo, View viewBelowShoppingCart) {
         mImageViewTogglerShoppingCart = toggler;
         initialize(activity, pictureUri, purchaseTitle, amount, currencyId, startShowingItemInfo, viewBelowShoppingCart);
         start();

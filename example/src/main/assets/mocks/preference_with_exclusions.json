@@ -27,7 +27,16 @@
   "marketplace_fee": 0,
   "notification_url": null,
   "operation_type": "regular_payment",
-  "payer": {},
+  "payer": {
+    "name": "",
+    "surname": "",
+    "email": "testpayer@gmail.com",
+    "date_created": "",
+    "phone": {
+      "area_code": "",
+      "number": ""
+    }
+  },
   "payment_methods": {
     "excluded_payment_methods": [
       {

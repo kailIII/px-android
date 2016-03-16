@@ -15,6 +15,7 @@ import com.mercadopago.InstallmentsActivity;
 import com.mercadopago.IssuersActivity;
 import com.mercadopago.PaymentMethodsActivity;
 import com.mercadopago.PaymentVaultActivity;
+import com.mercadopago.VaultActivity;
 import com.mercadopago.callbacks.GetPaymentMethodCallback;
 import com.mercadopago.model.BankDeal;
 import com.mercadopago.model.Card;
@@ -30,6 +31,7 @@ import com.mercadopago.model.Payment;
 import com.mercadopago.model.PaymentIntent;
 import com.mercadopago.model.PaymentMethod;
 import com.mercadopago.model.PaymentMethodSearch;
+import com.mercadopago.model.PaymentMethodSearchItem;
 import com.mercadopago.model.SavedCardToken;
 import com.mercadopago.model.Token;
 import com.mercadopago.services.BankDealService;
@@ -193,6 +195,23 @@ public class MercadoPago {
         if (this.mKeyType.equals(KEY_TYPE_PUBLIC)) {
             PaymentService service = mRestAdapterMPApi.create(PaymentService.class);
             service.getPaymentMethods(this.mKey, callback);
+        } else {
+            throw new RuntimeException("Unsupported key type for this method");
+        }
+    }
+
+    public void getPreferredPaymentMethods(String payerEmail, final Callback<List<PaymentMethodSearchItem>> callback) {
+
+        if (this.mKeyType.equals(KEY_TYPE_PUBLIC)) {
+            RestAdapter restAdapterBeta = new RestAdapter.Builder()
+                    .setEndpoint("http://private-16edc5-blacklabel.apiary-mock.com/")
+                    .setLogLevel(Settings.RETROFIT_LOGGING)
+                    .setConverter(new GsonConverter(JsonUtil.getInstance().getGson()))
+                    .setClient(HttpClientUtil.getClient(this.mContext))
+                    .build();
+
+            PaymentService service = restAdapterBeta.create(PaymentService.class);
+            service.getPreferredPaymentMethods(this.mKey, payerEmail, callback);
         } else {
             throw new RuntimeException("Unsupported key type for this method");
         }
@@ -391,7 +410,7 @@ public class MercadoPago {
 
     private static void startPaymentVaultActivity(Activity activity, String merchantPublicKey, String merchantBaseUrl, String merchantGetCustomerUri, String merchantAccessToken, String itemImageUri, String purchaseTitle, BigDecimal amount, String currencyId, Boolean showBankDeals, Boolean cardGuessingEnabled,
                                                   List<String> excludedPaymentMethodIds, List<String> excludedPaymentTypes, String defaultPaymentMethodId,
-                                                  Integer defaultInstallments, Integer maxInstallments) {
+                                                  Integer defaultInstallments, Integer maxInstallments, String payerEmail) {
 
         Intent vaultIntent = new Intent(activity, PaymentVaultActivity.class);
         vaultIntent.putExtra("merchantPublicKey", merchantPublicKey);
@@ -403,6 +422,7 @@ public class MercadoPago {
         vaultIntent.putExtra("amount", amount.toString());
         vaultIntent.putExtra("currencyId", currencyId);
         vaultIntent.putExtra("showBankDeals", showBankDeals);
+        vaultIntent.putExtra("payerEmail", payerEmail);
 
         vaultIntent.putExtra("cardGuessingEnabled", cardGuessingEnabled);
         putListExtra(vaultIntent, "excludedPaymentMethodIds", excludedPaymentMethodIds);
@@ -507,6 +527,7 @@ public class MercadoPago {
         private String mPurchaseTitle;
         private String mCurrencyId;
         private String mItemImageUri;
+        private String mPayerEmail;
 
         public StartActivityBuilder() {
 
@@ -678,6 +699,12 @@ public class MercadoPago {
             this.mItemImageUri = itemImageUri;
             return this;
         }
+
+        public StartActivityBuilder setPayerEmail(String payerEmail) {
+            this.mPayerEmail = payerEmail;
+            return this;
+        }
+
         public void startBankDealsActivity() {
 
             if (this.mActivity == null) throw new IllegalStateException("activity is null");
@@ -808,7 +835,7 @@ public class MercadoPago {
                         this.mMerchantGetCustomerUri, this.mMerchantAccessToken, this.mItemImageUri, this.mPurchaseTitle,
                         this.mAmount, this.mCurrencyId, this.mShowBankDeals, this.mCardGuessingEnabled,
                         this.mExcludedPaymentMethodIds, this.mExcludedPaymentTypes, this.mDefaultPaymentMethodId,
-                        this.mDefaultInstallments, this.mMaxInstallments);
+                        this.mDefaultInstallments, this.mMaxInstallments, this.mPayerEmail);
             } else {
                 throw new RuntimeException("Unsupported key type for this method");
             }

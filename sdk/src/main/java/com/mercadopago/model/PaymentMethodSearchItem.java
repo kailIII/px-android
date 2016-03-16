@@ -12,9 +12,9 @@ public class PaymentMethodSearchItem implements Serializable {
     private String type;
     private String description;
     private String comment;
-    private String iconName;
     private List<PaymentMethodSearchItem> children;
     private String childrenHeader;
+    private String cardId;
 
     public String getId() {
         return id;
@@ -56,19 +56,19 @@ public class PaymentMethodSearchItem implements Serializable {
         this.children = children;
     }
 
-    public String getIconName() {
-        return iconName;
-    }
-
-    public void setIconName(String iconName) {
-        this.iconName = iconName;
-    }
-
     public String getChildrenHeader() {
         return this.childrenHeader;
     }
 
     public boolean hasChildren() {
         return children != null && children.size() != 0;
+    }
+
+    public boolean isSavedCard() {
+        return this.cardId != null && !this.cardId.isEmpty();
+    }
+
+    public String getCardId() {
+        return this.cardId;
     }
 }

@@ -13,4 +13,5 @@ public interface PaymentMethodSearchCallback {
 
     void onPaymentMethodItemClicked(PaymentMethodSearchItem paymentMethodItem);
 
+    void onPreferredPaymentMethodItemClicked(PaymentMethodSearchItem preferredPaymentMethodItem);
 }
