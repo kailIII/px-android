@@ -10,6 +10,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +22,7 @@ import com.mercadopago.callbacks.GetPaymentMethodCallback;
 import com.mercadopago.callbacks.PaymentMethodSearchCallback;
 import com.mercadopago.controllers.ShoppingCartViewController;
 import com.mercadopago.core.MercadoPago;
+import com.mercadopago.model.AccountMoneyRequest;
 import com.mercadopago.model.CardToken;
 import com.mercadopago.model.Issuer;
 import com.mercadopago.model.PayerCost;
@@ -363,12 +366,16 @@ public class PaymentVaultActivity extends AppCompatActivity {
     protected void populateSearchList(List<PaymentMethodSearchItem> items) {
         PaymentMethodSearchItemAdapter groupsAdapter = new PaymentMethodSearchItemAdapter(this, items, getPaymentMethodSearchCallback());
         mGroupsRecyclerView.setAdapter(groupsAdapter);
+        int recyclerViewSize = Math.round(items.size()*getResources().getDimension(R.dimen.list_item_height_large));
+        mGroupsRecyclerView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, recyclerViewSize));
     }
 
     private void populatePreferredList(List<PaymentMethodSearchItem> preferred) {
         mPreferredRecyclerView.setVisibility(View.VISIBLE);
         PaymentMethodSearchItemAdapter preferredAdapter = new PaymentMethodSearchItemAdapter(this, preferred, getPaymentMethodSearchCallback());
         mPreferredRecyclerView.setAdapter(preferredAdapter);
+        int recyclerViewSize = Math.round(preferred.size()*getResources().getDimension(R.dimen.list_item_height_large));
+        mPreferredRecyclerView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, recyclerViewSize));
     }
 
     protected PaymentMethodSearchCallback getPaymentMethodSearchCallback() {
@@ -409,7 +416,7 @@ public class PaymentVaultActivity extends AppCompatActivity {
                 if(preferredPaymentMethodItem.getId().equals("account_money")){
                     resolveAccountMoneySelected(preferredPaymentMethodItem);
                 }
-                else if (preferredPaymentMethodItem.isSavedCard()) {
+                else {
                     resolveSavedCardSelected(preferredPaymentMethodItem);
                 }
             }
@@ -420,12 +427,14 @@ public class PaymentVaultActivity extends AppCompatActivity {
         PaymentMethod paymentMethod = new PaymentMethod();
         paymentMethod.setId(preferredPaymentMethodItem.getId());
         paymentMethod.setName(preferredPaymentMethodItem.getDescription());
-        finishWithPaymentMethodResult(paymentMethod, "");
+
+        AccountMoneyRequest accountMoneyRequest = new AccountMoneyRequest(preferredPaymentMethodItem.getItemToken(), preferredPaymentMethodItem.isSecurityCodeRequired());
+        finishWithAccountMoneyResult(paymentMethod, accountMoneyRequest);
     }
 
     private void resolveSavedCardSelected(final PaymentMethodSearchItem savedCardItem) {
         LayoutUtil.showProgressLayout(this);
-        final SavedCardToken savedCardToken = new SavedCardToken(savedCardItem.getCardId(), "");
+        final SavedCardToken savedCardToken = new SavedCardToken(savedCardItem.getItemToken(), "");
         mMercadoPago.getPaymentMethodById(savedCardItem.getId(), new GetPaymentMethodCallback() {
             @Override
             public void onSuccess(PaymentMethod paymentMethod) {
@@ -531,6 +540,16 @@ public class PaymentVaultActivity extends AppCompatActivity {
                 finishWithApiException(data);
             }
         }
+    }
+
+    private void finishWithAccountMoneyResult(PaymentMethod paymentMethod, AccountMoneyRequest accountMoneyRequest) {
+        LayoutUtil.showRegularLayout(mActivity);
+
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("paymentMethod", paymentMethod);
+        returnIntent.putExtra("accountMoneyRequest", accountMoneyRequest);
+        this.setResult(Activity.RESULT_OK, returnIntent);
+        this.finish();
     }
 
     private void finishWithSavedCardResult(PaymentMethod paymentMethod, SavedCardToken savedCardToken, String description) {

@@ -20,6 +20,7 @@ import com.mercadopago.controllers.ShoppingCartViewController;
 import com.mercadopago.core.MercadoPago;
 import com.mercadopago.exceptions.CheckoutPreferenceException;
 import com.mercadopago.exceptions.ExceptionHandler;
+import com.mercadopago.model.AccountMoneyRequest;
 import com.mercadopago.model.CheckoutPreference;
 import com.mercadopago.model.Issuer;
 import com.mercadopago.model.Item;
@@ -56,6 +57,7 @@ public class CheckoutActivity extends AppCompatActivity{
     protected String mErrorMessage;
     protected String mSelectedPaymentMethodInfo;
     protected SavedCardToken mSavedCardToken;
+    protected AccountMoneyRequest mAccountMoneyRequest;
 
     //Controls
     protected TextView mPaymentMethodCommentTextView;
@@ -66,6 +68,7 @@ public class CheckoutActivity extends AppCompatActivity{
     protected LinearLayout mPaymentMethodLayout;
     protected Button mPayButton;
     protected TextView mPaymentMethodDescription;
+    protected Boolean mSecurityCodeRequired;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -240,7 +243,9 @@ public class CheckoutActivity extends AppCompatActivity{
 
             mCreatedToken = (Token) data.getSerializableExtra("token");
 
-            mSavedCardToken = (SavedCardToken) data.getSerializableExtra("token");
+            mAccountMoneyRequest = (AccountMoneyRequest) data.getSerializableExtra("accountMoneyRequest");
+
+            mSavedCardToken = (SavedCardToken) data.getSerializableExtra("savedCardToken");
 
             mSelectedPaymentMethod = (PaymentMethod) data.getSerializableExtra("paymentMethod");
 
@@ -259,8 +264,28 @@ public class CheckoutActivity extends AppCompatActivity{
 
     private void showReviewAndConfirm() {
         drawPaymentMethodRow();
+        drawSecurityCodeLayout();
         drawTermsAndConditionsText();
         setAmountLabel();
+    }
+
+    private void drawSecurityCodeLayout() {
+        if(isSavedCardSelected() && mSelectedPaymentMethod.isSecurityCodeMandatory()) {
+            showSecurityCodeInputForCard();
+        } else if(isAccountMoneySelected() && mAccountMoneyRequest.isSecurityCodeRequired()) {
+            showSecurityCodeInputForAccountMoney();
+        }
+        else {
+            mSecurityCodeRequired = false;
+        }
+    }
+
+    private void showSecurityCodeInputForAccountMoney() {
+
+    }
+
+    private void showSecurityCodeInputForCard() {
+
     }
 
     private void setAmountLabel() {
@@ -311,11 +336,15 @@ public class CheckoutActivity extends AppCompatActivity{
     }
 
     private boolean isAccountMoneySelected() {
-        return mSelectedPaymentMethod != null && mSelectedPaymentMethod.getId().equals("account_money");
+        return mAccountMoneyRequest != null;
     }
 
     private boolean isCardSelected() {
         return MercadoPagoUtil.isCardPaymentType(mSelectedPaymentMethod.getPaymentTypeId());
+    }
+
+    private boolean isSavedCardSelected() {
+        return mSavedCardToken != null;
     }
 
     private void initializePaymentMethodRowControls() {
@@ -374,26 +403,7 @@ public class CheckoutActivity extends AppCompatActivity{
             // Set payment method id
             String paymentMethodId = paymentIntent.getPaymentMethodId();
 
-            // Create payment
-            /*MerchantPayment payment = new MerchantPayment(item, paymentIntent.getInstallments(), paymentIntent.getIssuerId(),
-                    paymentIntent.getToken(), oldPaymentMethodId, null, "mlm-cards-data");
 
-            MerchantServer.createPayment(this, "https://www.mercadopago.com", "/checkout/examples/doPayment", payment, new Callback<Payment>() {
-                @Override
-                public void success(Payment payment, Response response) {
-                    mPayment = payment;
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-
-                    LayoutUtil.showRegularLayout(mActivity);
-                    Toast.makeText(mActivity, error.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
-       */
-
-           // hideActionBar();
             LayoutUtil.showProgressLayout(this);
             if (MercadoPagoUtil.isCardPaymentType(mSelectedPaymentMethod.getPaymentTypeId())) {
                 new MercadoPago.StartActivityBuilder()
@@ -415,14 +425,12 @@ public class CheckoutActivity extends AppCompatActivity{
         }
     }
 
-    protected void startMPApp() {
-
-        if ((mCheckoutPreference != null) && (mCheckoutPreference.getId() != null)) {
-            Intent intent = new Intent(this, InstallAppActivity.class);
-            intent.putExtra("preferenceId", mCheckoutPreference.getId());
-            intent.putExtra("packageName", this.getPackageName());
-            intent.putExtra("deepLink", "mercadopago://mpsdk_install_app");
-            startActivityForResult(intent, MercadoPago.INSTALL_APP_REQUEST_CODE);
+    @Override
+    public void onBackPressed() {
+        if(mSelectedPaymentMethod != null) {
+            //TODO adapt to installments
+            startPaymentVaultActivity();
         }
     }
+
 }

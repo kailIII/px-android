@@ -14,7 +14,8 @@ public class PaymentMethodSearchItem implements Serializable {
     private String comment;
     private List<PaymentMethodSearchItem> children;
     private String childrenHeader;
-    private String cardId;
+    private String itemToken;
+    private Boolean securityCodeRequired;
 
     public String getId() {
         return id;
@@ -64,11 +65,11 @@ public class PaymentMethodSearchItem implements Serializable {
         return children != null && children.size() != 0;
     }
 
-    public boolean isSavedCard() {
-        return this.cardId != null && !this.cardId.isEmpty();
+    public boolean isSecurityCodeRequired() {
+        return securityCodeRequired != null && securityCodeRequired;
     }
 
-    public String getCardId() {
-        return this.cardId;
+    public String getItemToken() {
+        return itemToken;
     }
 }

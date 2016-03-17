@@ -71,6 +71,18 @@ public class PaymentMethod implements Serializable {
         }
     }
 
+    //TODO verificar que sea correcto usar esto
+    public boolean isSecurityCodeMandatory() {
+
+        Setting setting = settings.get(0);
+        if ((setting != null) && ("mandatory".equals(setting.getSecurityCode().getMode()))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     private boolean isAdditionalInfoNeeded(String param) {
 
         if ((additionalInfoNeeded != null) && (additionalInfoNeeded.size() > 0)) {
