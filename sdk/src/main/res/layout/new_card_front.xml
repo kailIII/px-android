@@ -12,24 +12,25 @@
         android:layout_width="256dp"
         android:layout_height="161dp"
         android:layout_gravity="center">
-
+        <!--fondo blanco para low, transparente para lolli-->
         <FrameLayout
-            android:id="@+id/mpsdkActivityNewCardFormBasecolorFront"
             android:layout_width="256dp"
             android:layout_height="161dp"
             android:layout_gravity="center"
-            android:background="@drawable/new_card_layout"/>
+            android:background="@drawable/new_card_layout">
+            <ImageView
+                android:id="@+id/mpsdkCardLowApiImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/mpsdk_white"/>
 
+            <ImageView
+                android:id="@+id/mpsdkCardLollipopImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@color/mpsdk_white" />
 
-        <FrameLayout
-            android:id="@+id/mpsdkActivityNewCardFormColorFront"
-            android:layout_width="256dp"
-            android:layout_height="161dp"
-            android:layout_gravity="center"
-            android:background="@drawable/new_card_layout"
-            android:visibility="invisible"/>
-
-
+        </FrameLayout>
 
         <FrameLayout
             android:layout_width="177dp"

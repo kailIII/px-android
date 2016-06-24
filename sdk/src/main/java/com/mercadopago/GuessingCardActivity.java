@@ -652,7 +652,8 @@ public class GuessingCardActivity extends FrontCardActivity {
                     public void onPaymentMethodSet(PaymentMethod paymentMethod) {
                         if (mCurrentPaymentMethod == null) {
                             mCurrentPaymentMethod = paymentMethod;
-                            changeCardColor(getCardColor(paymentMethod));
+//                            changeCardColor(getCardColor(paymentMethod));
+                            fadeInColor(getCardColor(paymentMethod));
                             changeCardImage(getCardImage(paymentMethod));
                             manageSettings();
                             manageAdditionalInfoNeeded();
@@ -667,7 +668,8 @@ public class GuessingCardActivity extends FrontCardActivity {
                         if (mCurrentPaymentMethod == null) return;
                         mCurrentPaymentMethod = null;
                         setSecurityCodeLocation(null);
-                        changeCardColor(CardInterface.NEUTRAL_CARD_COLOR);
+//                        changeCardColor(CardInterface.NEUTRAL_CARD_COLOR);
+                        fadeOutColor();
                         clearCardImage();
                         clearSecurityCodeFront();
                     }
@@ -918,9 +920,21 @@ public class GuessingCardActivity extends FrontCardActivity {
         setCardSecurityCodeFocusListener();
     }
 
-    public void changeCardColor(int color) {
+//    public void changeCardColor(int color) {
+//        if (!showingBack() && mFrontFragment != null) {
+//            mFrontFragment.transitionColor(color);
+//        }
+//    }
+
+    public void fadeInColor(int color) {
         if (!showingBack() && mFrontFragment != null) {
-            mFrontFragment.transitionColor(color);
+            mFrontFragment.fadeInColor(color);
+        }
+    }
+
+    public void fadeOutColor() {
+        if (!showingBack() && mFrontFragment != null) {
+            mFrontFragment.fadeOutColor(CardInterface.NEUTRAL_CARD_COLOR);
         }
     }
 

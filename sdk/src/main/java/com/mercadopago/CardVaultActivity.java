@@ -185,7 +185,7 @@ public class CardVaultActivity extends ShowCardActivity {
             initializeCard();
             if (mCurrentPaymentMethod != null) {
                 int color = getCardColor(mCurrentPaymentMethod);
-                mFrontFragment.quickTransition(color);
+                mFrontFragment.setCardColor(color);
             }
             checkStartInstallmentsActivity();
 
