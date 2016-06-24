@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -13,6 +14,8 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.transition.Transition;
+import android.transition.TransitionValues;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -721,7 +724,8 @@ public class GuessingCardActivity extends FrontCardActivity {
             startBackFragment();
         } else if (showingIdentification()) {
             getSupportFragmentManager().popBackStack();
-            startBackFragment();
+            mCardSideState = CARD_SIDE_BACK;
+//            startBackFragment();
             if (showBankDeals) {
                 mToolbarButton.setVisibility(View.VISIBLE);
             }
@@ -732,10 +736,7 @@ public class GuessingCardActivity extends FrontCardActivity {
         if (!mIdentificationNumberRequired) {
             return;
         }
-        if (showingFront()) {
-            startIdentificationFragment();
-        } else if (showingBack()) {
-            getSupportFragmentManager().popBackStack();
+        if (showingFront() || showingBack()) {
             startIdentificationFragment();
         }
     }
@@ -758,7 +759,7 @@ public class GuessingCardActivity extends FrontCardActivity {
                 .beginTransaction()
                 .setCustomAnimations(R.anim.from_middle_left, R.anim.to_middle_left,
                         R.anim.from_middle_left, R.anim.to_middle_left)
-                .replace(R.id.mpsdkActivityNewCardContainer, mBackFragment)
+                .replace(R.id.mpsdkActivityNewCardContainer, mBackFragment, "BACK_FRAGMENT")
                 .addToBackStack(null)
                 .commit();
     }
@@ -1378,7 +1379,7 @@ public class GuessingCardActivity extends FrontCardActivity {
     }
 
     private void createToken() {
-        checkFlipCardToFront(false);
+//        checkFlipCardToFront(false);
         LayoutUtil.hideKeyboard(this);
         mInputContainer.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
@@ -1527,7 +1528,7 @@ public class GuessingCardActivity extends FrontCardActivity {
                                 //error
                             } else if (issuers.size() == 1) {
                                 mSelectedIssuer = issuers.get(0);
-                                checkFlipCardToFront(false);
+//                                checkFlipCardToFront(false);
                                 finishWithResult();
                             } else {
                                 fadeInIssuersActivity(issuers);
@@ -1552,13 +1553,16 @@ public class GuessingCardActivity extends FrontCardActivity {
     }
 
     public void fadeInIssuersActivity(final List<Issuer> issuers) {
-        checkFlipCardToFront(false);
+//        checkFlipCardToFront(false);
         startIssuersActivity(issuers);
     }
 
     public void startIssuersActivity(final List<Issuer> issuers) {
-        runOnUiThread(new Runnable() {
-            public void run() {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable(){
+            @Override
+            public void run(){
+                // do something
                 new MercadoPago.StartActivityBuilder()
                         .setActivity(mActivity)
                         .setPublicKey(mPublicKey)
@@ -1567,9 +1571,24 @@ public class GuessingCardActivity extends FrontCardActivity {
                         .setIssuers(issuers)
                         .setDecorationPreference(mDecorationPreference)
                         .startIssuersActivity();
-                overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
+                overridePendingTransition(R.anim.slide_right_to_left_in_slower, R.anim.slide_right_to_left_out_slower);
             }
-        });
+        }, 3000);
+
+//        runOnUiThread(new Runnable() {
+//            public void run() {
+//                new MercadoPago.StartActivityBuilder()
+//                        .setActivity(mActivity)
+//                        .setPublicKey(mPublicKey)
+//                        .setPaymentMethod(mCurrentPaymentMethod)
+//                        .setToken(mToken)
+//                        .setIssuers(issuers)
+//                        .setDecorationPreference(mDecorationPreference)
+//                        .startIssuersActivity();
+//                overridePendingTransition(R.anim.slide_right_to_left_in_slower, R.anim.slide_right_to_left_out_slower);
+////                overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
+//            }
+//        });
     }
 
     @Override
@@ -1583,6 +1602,10 @@ public class GuessingCardActivity extends FrontCardActivity {
                 finishWithResult();
             } else if (resultCode == RESULT_CANCELED) {
                 finish();
+                overridePendingTransition(R.anim.slide_right_to_left_in_slower, R.anim.slide_right_to_left_out_slower);
+
+                //                overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
+
             }
         }
         else if(requestCode == ErrorUtil.ERROR_REQUEST_CODE) {
@@ -1603,6 +1626,9 @@ public class GuessingCardActivity extends FrontCardActivity {
         returnIntent.putExtra("issuer", mSelectedIssuer);
         setResult(RESULT_OK, returnIntent);
         finish();
+        overridePendingTransition(R.anim.slide_right_to_left_in_slower, R.anim.slide_right_to_left_out_slower);
+
+//                overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
     }
 
     private static class CardNumberTextWatcher implements TextWatcher {

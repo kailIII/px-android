@@ -3,6 +3,7 @@ package com.mercadopago;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 
 import com.mercadopago.callbacks.Callback;
@@ -130,6 +131,9 @@ public class CardVaultActivity extends ShowCardActivity {
                         .setSupportedPaymentMethods(mPaymentMethodList)
                         .setDecorationPreference(mDecorationPreference)
                         .startGuessingCardActivity();
+//                overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
+
+//                overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
             }
         });
     }
@@ -242,8 +246,11 @@ public class CardVaultActivity extends ShowCardActivity {
     }
 
     public void startInstallmentsActivity(final List<PayerCost> payerCosts) {
-        runOnUiThread(new Runnable() {
-            public void run() {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable(){
+            @Override
+            public void run(){
+                // do something
                 new MercadoPago.StartActivityBuilder()
                         .setActivity(mActivity)
                         .setPublicKey(mPublicKey)
@@ -258,7 +265,28 @@ public class CardVaultActivity extends ShowCardActivity {
                         .startInstallmentsActivity();
                 overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
             }
-        });
+        }, 3000);
+
+
+//        runOnUiThread(new Runnable() {
+//            public void run() {
+//                new MercadoPago.StartActivityBuilder()
+//                        .setActivity(mActivity)
+//                        .setPublicKey(mPublicKey)
+//                        .setPaymentMethod(mCurrentPaymentMethod)
+//                        .setAmount(mAmount)
+//                        .setToken(mToken)
+//                        .setPayerCosts(payerCosts)
+//                        .setIssuer(mSelectedIssuer)
+//                        .setPaymentPreference(mPaymentPreference)
+//                        .setSite(mSite)
+//                        .setDecorationPreference(mDecorationPreference)
+//                        .startInstallmentsActivity();
+//                overridePendingTransition(R.anim.fade_in_seamless, R.anim.fade_out_seamless);
+////                overridePendingTransition(R.anim.slide_right_to_left_in_slower, R.anim.slide_right_to_left_out_slower);
+//
+//            }
+//        });
     }
 
     @Override
